@@ -8,7 +8,7 @@ Karys Barbosa
 
 Nathalia Brasilino Gimenes
 
-Matheus de Almeida Mazieiro
+Matheus Mazieiro
 
 Matheus Sousa
 
@@ -23,7 +23,7 @@ Alex Alves Cardoso
 - É dado um uma cifra SPN com 4 rounds.
 - Nós também sabemos os *sbox* e o *pbox*.
 - Precisamos descobrir a chave.
-- Temos $2^{16}$ pares (plaintext, ciphertext).
+- Temos $2^{16}$ pares (plaintext, ciphertext).
 
 ---
 
@@ -159,11 +159,28 @@ if __name__ == "__main__":
     - Chamaremos o grupo da entrada de `input mask`
     - Chamaremos o grupo da saída de `output mask`
     - Podemos (inteligentemente) considerar a paridade em vez de pensar no XOR de todos os bits
+        - Se a paridade da entrada e a paridade da saída forem iguais, isso implica que a contribuição daquela chave no XOR global é equivalente a 0.
+        - Caso contrário, a chave contribui com 1 no XOR global.
 - Mas isso só funcionaria se `sbox` fosse linear
     - Não é o caso 😢
 - Portanto precisamos de uma Tabela de Aproximação Linear (*Linear approximation table* - LAT)
     - Com certeza alguém já chamei isso de matriz de correlação
 - O valor de uma célula é igual ao número de vezes em que a paridade foi verdadeira ao percorrer todas as entradas possíveis, menos [o maior valor de entrada dividido por 2]
+    
+    ```python
+                             input_mask
+                                                  
+                   0     1     2     3     4     5     6 
+    
+             0     128,  0,    0,    0,    0,    0,    0,  
+             1     0,   -90,   8,    14,  -2,   -4,   -2,
+    output   2     0,    8,    94,  -10,  -2,    6,   -8,  ...
+    mask     3     0,    14,   2,   -64,  -4,   -6,   -6, 
+             4     0,   -6,    0,    6,   -86,  -12,  -2,
+             5     0,    8,   -4,    8,    8,    56,  -8, 
+                                 ...
+    ```
+    
 - Como gerar LAT
 
 ```python
@@ -201,9 +218,9 @@ def create_lat(pn: PermutationNetwork) -> List[List[int]]:
         
     - Nota: Quanto mais longe de $0.5$ melhor
 - A paridade no fim deve ser igual a paridade no inicio
-    - $k[0] = k[2] = k[4]$ e $k[1]=k[3]$
-    - Se o bit estiver correto, conseguimos descriptografar um round com sucesso
+    - Se o bit estiver correto, conseguimos decifrar um round com sucesso
     - Caso contrário a paridade dará errado e a equação linear não vai ter o bias que deveria
+        - Isso quer dizer que a aproximação linear não confere
 - O código a seguir resolve 1 byte, que será armazenado em `guessed_key`
 - Executar `pn.apply_perm(bytes([255] + [0] * 7))` nos dirá onde os bits desse byte estará na chave final
 
@@ -242,7 +259,7 @@ guessed_key = possible_keys[0][1]
 
 - Fazer isso mais 7 vezes com os *payloads* corretos permitirá encontrar `keys[4]` e então voltar um estágio
     - Daí pra frente só para traz, literalmente:
-        - Descriptografar o nível anterior com a mesma ideia
+        - Decifrar o nível anterior com a mesma ideia
 
 ---
 
