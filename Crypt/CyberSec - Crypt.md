@@ -23,7 +23,7 @@ Alex Alves Cardoso
 - É dado um uma cifra SPN com 4 rounds.
 - Nós também sabemos os *sbox* e o *pbox*.
 - Precisamos descobrir a chave.
-- Temos $2^{16}$ pares (plaintext, ciphertext).
+- Temos $2^{16}$ pares (plaintext, ciphertext).
 
 ---
 
